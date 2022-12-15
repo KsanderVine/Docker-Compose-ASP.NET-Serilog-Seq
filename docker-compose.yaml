@@ -32,7 +32,7 @@ services:
     mem_limit: 5g
     memswap_limit: 5g
     volumes:
-      - E:\__docker-volumes\seqData:/data
+      - /path/to/seq/data:/data
     environment:
       - ACCEPT_EULA=Y
     ports:
