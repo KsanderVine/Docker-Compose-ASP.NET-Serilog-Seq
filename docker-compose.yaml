@@ -1,5 +1,6 @@
 version: '3.2'
 services:
+
   app:
     build:
       context: ./UserBlogApp
@@ -10,8 +11,11 @@ services:
       - "8040:80"
       - "44340:443"
     depends_on:
-      - sqlServer
-      - seq
+      sqlServer:
+        condition: service_healthy
+      seq:
+        condition: service_started
+
   sqlServer:
     image: "mcr.microsoft.com/mssql/server:2019-latest"
     container_name: sqlServer
@@ -19,12 +23,21 @@ services:
     mem_limit: 5g
     memswap_limit: 5g
     volumes:
-      - E:\__docker-volumes\sqlServer:/data
+      - sqlserverdata:/data
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=pa55w0rd!
+      - MSSQL_SA_PASSWORD=${MSSQL_PASSWORD}
     ports:
       - "1433:1433"
+    healthcheck:
+      test: [
+        "CMD", "/opt/mssql-tools/bin/sqlcmd", 
+        "-U", "sa", 
+        "-P", "${MSSQL_PASSWORD}", 
+        "-Q", "SELECT \"READY\""]
+      interval: 15s
+      retries: 120
+
   seq:
     image: datalust/seq:latest
     container_name: seq
@@ -32,9 +45,15 @@ services:
     mem_limit: 5g
     memswap_limit: 5g
     volumes:
-      - /path/to/seq/data:/data
+      - seqdata:/data
     environment:
       - ACCEPT_EULA=Y
     ports:
       - 8020:80
       - 5341:5341
+
+volumes:
+  sqlserverdata:
+    driver: local
+  seqdata:
+    driver: local
