@@ -1,0 +1,40 @@
+version: '3.2'
+services:
+  app:
+    build:
+      context: ./UserBlogApp
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    ports:
+      - "8040:80"
+      - "44340:443"
+    depends_on:
+      - sqlServer
+      - seq
+  sqlServer:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    container_name: sqlServer
+    restart: unless-stopped
+    mem_limit: 5g
+    memswap_limit: 5g
+    volumes:
+      - E:\__docker-volumes\sqlServer:/data
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=pa55w0rd!
+    ports:
+      - "1433:1433"
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    restart: unless-stopped
+    mem_limit: 5g
+    memswap_limit: 5g
+    volumes:
+      - E:\__docker-volumes\seqData:/data
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 8020:80
+      - 5341:5341
